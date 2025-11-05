@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  body {
+    background: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+    color: #1E2A38;
+    min-height: 100vh;
+  }
+
+  h2, h6, label, .fw-semibold {
+    color: #1E2A38 !important;
+  }
+
+  /* Card styles matching welcome page */
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-top: 6px solid #D6E03F;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .card h3, .card h6 {
+    color: #1E2A38;
+  }
+
+  /* Form styles */
+  .form-select, .form-label, input.form-control {
+    color: #1E2A38;
+  }
+
+  /* Table styles */
+  .table thead {
+    background-color: #D6E03F;
+    color: #1E2A38;
+    font-weight: 600;
+  }
+
+  .table tbody tr:hover {
+    background-color: rgba(214, 224, 63, 0.1);
+    cursor: pointer;
+  }
+
+  /* Button styles */
+  .btn-filter {
+    background-color: #D6E03F;
+    border: none;
+    color: #1E2A38;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-filter:hover {
+    background-color: #c4d238;
+    transform: translateY(-2px);
+  }
+
+  /* Container spacing */
+  .container {
+    max-width: 1200px;
+  }
+
+  /* Responsive adjustments */
+  @media(max-width: 768px) {
+    .row {
+      flex-direction: column;
+    }
+  }
+
+</style>
+
+<div class="container mt-5">
+  <h2 class="text-center fw-bold mb-4">Moepi Check In Admin Dashboard 📊</h2>
+
+  <!-- Filters -->
+  <form id="filterForm" class="row g-3 mb-4 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Filter by Employee</label>
+      <select name="name" class="form-select">
+        <option value="">All Employees</option>
+        {% for e in employees %}
+          <option value="{{ e.fullname }}" {% if e.fullname|string == name_filter %}selected{% endif %}>{{ e.fullname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Filter by Month</label>
+      <select name="month" class="form-select">
+        <option value="">All Months</option>
+        {% set months = ["January", "February", "March", "April", "May", "June",
+                         "July", "August", "September", "October", "November", "December"] %}
+        {% for i in range(1, 13) %}
+          <option value="{{ i }}" {% if month_filter|int == i %}selected{% endif %}>{{ months[i-1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Filter by Year</label>
+      <select name="year" class="form-select">
+        <option value="">All Years</option>
+        {% for y in range(2023, now.year + 1) %}
+          <option value="{{ y }}" {% if year_filter|int == y %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Filter by Day</label>
+      <input type="date" name="day" class="form-control" value="{{ day_filter if day_filter else '' }}">
+    </div>
+  </form>
+
+  <!-- Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <h6>Total Check-Ins</h6>
+        <h3 id="totalCheckins">0</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <h6>Earliest Check-In</h6>
+        <h3 id="earliestCheckin">-</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <h6>Most Active Employee</h6>
+        <h3 id="mostActive">-</h3>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <h6>Least Active Employee</h6>
+        <h3 id="leastActive">-</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6">
+      <div class="card">
+        <h6 class="text-center fw-semibold mb-3">Monthly Check-Ins</h6>
+        <canvas id="monthChart"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <h6 class="text-center fw-semibold mb-3">Check-Ins by Employee</h6>
+        <canvas id="employeeChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Check-ins Table -->
+  <div class="card mb-5">
+    <h6 class="fw-semibold mb-3">All Employee Check-In History</h6>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Comment</th>
+          </tr>
+        </thead>
+        <tbody id="checkinTable">
+          {% for c in checkins %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ c.user.fullname }}</td>
+            <td>{{ c.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ c.timestamp.strftime('%H:%M:%S') }}</td>
+            <td>{{ c.comment or "-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const filterForm = document.getElementById('filterForm');
+  const checkinTable = document.getElementById('checkinTable');
+
+  const colors = {
+    lime: '#D6E03F',
+    navy: '#1E2A38'
+  };
+
+  const monthCtx = document.getElementById('monthChart').getContext('2d');
+  const employeeCtx = document.getElementById('employeeChart').getContext('2d');
+
+  let monthChart = new Chart(monthCtx, { type: 'bar', data: {}, options: { responsive: true } });
+  let employeeChart = new Chart(employeeCtx, { type: 'bar', data: {}, options: { responsive: true } });
+
+  async function updateDashboard() {
+    const params = new URLSearchParams(new FormData(filterForm));
+    const res = await fetch(`/admin/data?${params.toString()}`);
+    const data = await res.json();
+    if(data.error) return alert(data.error);
+
+    document.getElementById('totalCheckins').textContent = data.total_checkins;
+    document.getElementById('earliestCheckin').textContent = data.earliest_checkin;
+    document.getElementById('mostActive').textContent = data.most_active_employee;
+    document.getElementById('leastActive').textContent = data.least_active_employee;
+
+    monthChart.data = {
+      labels: data.month_labels,
+      datasets: [{ label: 'Monthly Check-ins', data: data.month_counts, backgroundColor: colors.lime }]
+    };
+    monthChart.update();
+
+    employeeChart.data = {
+      labels: data.employee_names,
+      datasets: [{ label: 'Check-ins by Employee', data: data.employee_counts, backgroundColor: colors.navy }]
+    };
+    employeeChart.update();
+
+    checkinTable.innerHTML = '';
+    data.checkins.forEach((c, i) => {
+      const row = `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${c.employee}</td>
+          <td>${c.date}</td>
+          <td>${c.time}</td>
+          <td>${c.comment || '-'}</td>
+        </tr>
+      `;
+      checkinTable.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  filterForm.addEventListener('change', updateDashboard);
+  updateDashboard();
+});
+</script>
+{% endblock %}
