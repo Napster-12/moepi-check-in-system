@@ -1,89 +1,117 @@
-{% extends 'base.html' %}
-{% block content %}
-<style>
-  body {
-    background: #f8f9fa;
-    font-family: 'Poppins', sans-serif;
-    color: #1E2A38;
-    min-height: 100vh;
-  }
-
-  h2, h6, label, .fw-semibold {
-    color: #1E2A38 !important;
-  }
-
-  /* Card styles matching welcome page */
-  .card {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    border-top: 6px solid #D6E03F;
-    padding: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  }
-
-  .card h3, .card h6 {
-    color: #1E2A38;
-  }
-
-  /* Form styles */
-  .form-select, .form-label, input.form-control {
-    color: #1E2A38;
-  }
-
-  /* Table styles */
-  .table thead {
-    background-color: #D6E03F;
-    color: #1E2A38;
-    font-weight: 600;
-  }
-
-  .table tbody tr:hover {
-    background-color: rgba(214, 224, 63, 0.1);
-    cursor: pointer;
-  }
-
-  /* Button styles */
-  .btn-filter {
-    background-color: #D6E03F;
-    border: none;
-    color: #1E2A38;
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 30px;
-    transition: all 0.3s ease;
-  }
-
-  .btn-filter:hover {
-    background-color: #c4d238;
-    transform: translateY(-2px);
-  }
-
-  /* Container spacing */
-  .container {
-    max-width: 1200px;
-  }
-
-  /* Responsive adjustments */
-  @media(max-width: 768px) {
-    .row {
-      flex-direction: column;
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moepi Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+      color: #1E2A38;
+      min-height: 100vh;
     }
-  }
 
-</style>
+    h2, h6, label, .fw-semibold {
+      color: #1E2A38 !important;
+    }
 
+    /* Card styles matching welcome page */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-top: 6px solid #D6E03F;
+      padding: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .card h3, .card h6 {
+      color: #1E2A38;
+    }
+
+    /* Form styles */
+    .form-select, .form-label, input.form-control {
+      color: #1E2A38;
+    }
+
+    /* Table styles */
+    .table thead {
+      background-color: #D6E03F;
+      color: #1E2A38;
+      font-weight: 600;
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(214, 224, 63, 0.1);
+      cursor: pointer;
+    }
+
+    /* Button styles */
+    .btn-filter {
+      background-color: #D6E03F;
+      border: none;
+      color: #1E2A38;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover {
+      background-color: #c4d238;
+      transform: translateY(-2px);
+    }
+
+    /* Container spacing */
+    .container {
+      max-width: 1200px;
+      padding: 0 1rem;
+    }
+
+    /* Charts */
+    canvas {
+      max-width: 100%;
+      height: auto !important;
+    }
+
+    /* Table responsiveness */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    /* Responsive adjustments */
+    @media(max-width: 992px) {
+      .row.g-4 {
+        flex-direction: column;
+      }
+    }
+
+    @media(max-width: 768px) {
+      .row.g-4 .col-md-6, 
+      .row.g-4 .col-md-3 {
+        flex: 1 1 100%;
+      }
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
 <div class="container mt-5">
   <h2 class="text-center fw-bold mb-4">Moepi Check In Admin Dashboard 📊</h2>
 
   <!-- Filters -->
   <form id="filterForm" class="row g-3 mb-4 align-items-end">
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <label class="form-label fw-semibold">Filter by Employee</label>
       <select name="name" class="form-select">
         <option value="">All Employees</option>
@@ -92,7 +120,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <label class="form-label fw-semibold">Filter by Month</label>
       <select name="month" class="form-select">
         <option value="">All Months</option>
@@ -103,7 +131,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <label class="form-label fw-semibold">Filter by Year</label>
       <select name="year" class="form-select">
         <option value="">All Years</option>
@@ -112,7 +140,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <label class="form-label fw-semibold">Filter by Day</label>
       <input type="date" name="day" class="form-control" value="{{ day_filter if day_filter else '' }}">
     </div>
@@ -120,25 +148,25 @@
 
   <!-- Stats -->
   <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <div class="card text-center">
         <h6>Total Check-Ins</h6>
         <h3 id="totalCheckins">0</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <div class="card text-center">
         <h6>Earliest Check-In</h6>
         <h3 id="earliestCheckin">-</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <div class="card text-center">
         <h6>Most Active Employee</h6>
         <h3 id="mostActive">-</h3>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-6">
       <div class="card text-center">
         <h6>Least Active Employee</h6>
         <h3 id="leastActive">-</h3>
@@ -148,13 +176,13 @@
 
   <!-- Charts -->
   <div class="row g-4 mb-5">
-    <div class="col-md-6">
+    <div class="col-md-6 col-12">
       <div class="card">
         <h6 class="text-center fw-semibold mb-3">Monthly Check-Ins</h6>
         <canvas id="monthChart"></canvas>
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6 col-12">
       <div class="card">
         <h6 class="text-center fw-semibold mb-3">Check-Ins by Employee</h6>
         <canvas id="employeeChart"></canvas>
@@ -206,8 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const monthCtx = document.getElementById('monthChart').getContext('2d');
   const employeeCtx = document.getElementById('employeeChart').getContext('2d');
 
-  let monthChart = new Chart(monthCtx, { type: 'bar', data: {}, options: { responsive: true } });
-  let employeeChart = new Chart(employeeCtx, { type: 'bar', data: {}, options: { responsive: true } });
+  let monthChart = new Chart(monthCtx, { type: 'bar', data: {}, options: { responsive: true, maintainAspectRatio: false } });
+  let employeeChart = new Chart(employeeCtx, { type: 'bar', data: {}, options: { responsive: true, maintainAspectRatio: false } });
 
   async function updateDashboard() {
     const params = new URLSearchParams(new FormData(filterForm));
@@ -251,4 +279,5 @@ document.addEventListener('DOMContentLoaded', function() {
   updateDashboard();
 });
 </script>
-{% endblock %}
+</body>
+</html>
